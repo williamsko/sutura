@@ -32,11 +32,11 @@ class AuthResource(ModelResource):
 
     def prepend_urls(self):
         return [
-            url(rf'^%s/register%s$' % (self._meta.resource_name, trailing_slash()), self.wrap_view(
-                'register'), name='api_register'),
+            url(rf'^%s/register$' %
+                self._meta.resource_name, self.wrap_view('register')),
 
-            url(rf'^%s/login%s$' % (self._meta.resource_name, trailing_slash()), self.wrap_view(
-                'login'), name='api_customer_login'),
+            url(rf'^%s/login$' %
+                self._meta.resource_name, self.wrap_view('login')),
         ]
 
     def register(self, request, **kwargs):

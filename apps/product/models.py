@@ -8,6 +8,10 @@ def product_image_directory_path(instance, filename):
     return f'product/{filename}'
 
 
+def banner_image_directory_path(instance, filename):
+    return f'banner/{filename}'
+
+
 class Category(MPTTModel):
     name = models.CharField(max_length=20, null=False, blank=False)
 
@@ -92,6 +96,26 @@ class TypeForm(models.Model):
     class Meta:
         verbose_name = _('Product form type')
         verbose_name_plural = _('Product form type')
+        app_label = 'product'
+
+    def __str__(self):
+        return self.name
+
+
+class Banner(models.Model):
+    product = models.ForeignKey(
+        Product, null=False, blank=False, on_delete=models.DO_NOTHING)
+    title = models.CharField(max_length=50, null=False, blank=False)
+    description = models.TextField(max_length=500, null=False, blank=False)
+    image = models.ImageField(
+        upload_to=banner_image_directory_path, blank=False, null=False)
+    status = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('Banner')
+        verbose_name_plural = _('Banners')
         app_label = 'product'
 
     def __str__(self):

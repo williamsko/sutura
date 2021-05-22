@@ -56,3 +56,24 @@ class ProductResource(ModelResource):
 
     def determine_format(self, request):
         return 'application/json'
+
+
+class BannerResource(ModelResource):
+    type_form = ForeignKey(TypeFormResource, 'type_form', full=True)
+    category = ForeignKey(CategoryResource, 'category', full=True)
+
+    class Meta:
+        queryset = product_controller.get_all_products()
+        list_allowed_methods = ['get', 'post']
+        detail_allowed_methods = ['get', 'post', 'put', 'delete']
+        resource_name = 'products'
+        filtering = {
+            'slug': ALL,
+            'created': ['exact', 'range', 'gt', 'gte', 'lt', 'lte'],
+            'category': ALL_WITH_RELATIONS,
+            'name' : ['exact', 'startswith','contains'],
+        }
+        authorization = Authorization()
+
+    def determine_format(self, request):
+        return 'application/json'
