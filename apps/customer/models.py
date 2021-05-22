@@ -3,24 +3,8 @@ from django.db import models
 from django_countries.fields import CountryField
 from django.utils.translation import ugettext_lazy as _
 from apps.utils.tools import generate_random_identifier
-from django.core.exceptions import ValidationError
 from django.core import serializers
 from apps.product.models import Product
-import uuid
-import os
-
-
-def proof_directory_path(instance, filename):
-    return f'proof/{uuid.uuid4().hex}.{os.path.splitext(filename)[1]}'
-
-
-def validate_file_extension(value):
-    import os
-    ext = os.path.splitext(value.name)[1]
-    valid_extensions = ['.pdf', '.doc', '.docx',
-                        '.jpg', '.png', '.xlsx', '.xls']
-    if not ext.lower() in valid_extensions:
-        raise ValidationError('Unsupported file extension.')
 
 
 class Customer(models.Model):
@@ -118,8 +102,7 @@ class Proofs(models.Model):
         'Customer', on_delete=models.DO_NOTHING, null=False, blank=False)
     type = models.ForeignKey(
         'ProofType', on_delete=models.DO_NOTHING, null=False, blank=False)
-    content = models.FileField(
-        upload_to=proof_directory_path, blank=True, null=True, validators=[validate_file_extension])
+    file_object = models.CharField(null=True, blank=True, max_length=100)
     status = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -128,9 +111,9 @@ class Proofs(models.Model):
     def json(self):
         return {
             'type': self.type,
-            'file': self.content,
             'status': self.status,
         }
+
 
     class Meta:
         verbose_name = _('Proof')

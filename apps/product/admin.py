@@ -12,13 +12,14 @@ class ProductCommandFormInline(admin.TabularInline):
 
 class ProductAdmin(admin.ModelAdmin):
 
-    list_display = ('image_tag', 'name',  'category',
+    list_display = ('image_tag', 'name',  'category', 'marque',
                     'price', 'type_form', 'status')
     search_fields = ['name']
     list_filter = ('category', 'status')
 
     def image_tag(self, obj):
-        return mark_safe(f'<img src="{obj.image.url}" height=100 width=100 />')
+        if obj.image and hasattr(obj.image, 'url'):
+            return mark_safe(f'<img src="{obj.image.url}" height=100 width=100 />')
 
 
 class TypeFormAdmin(admin.ModelAdmin):
@@ -31,3 +32,4 @@ class TypeFormAdmin(admin.ModelAdmin):
 admin.site.register(Category)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(TypeForm, TypeFormAdmin)
+admin.site.register(ProductCommandForm)

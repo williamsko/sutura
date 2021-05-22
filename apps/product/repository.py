@@ -19,3 +19,7 @@ def get_type_forms():
 
 def get_product_by_id(id):
     return Product.objects.get(id=id)
+
+
+def get_product_by_identifier(identifier):
+    return Product.objects.get(identifier=identifier)

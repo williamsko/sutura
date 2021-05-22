@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
+from apps.utils.tools import generate_random_identifier
 
 
 def product_image_directory_path(instance, filename):
@@ -9,6 +10,7 @@ def product_image_directory_path(instance, filename):
 
 class Category(MPTTModel):
     name = models.CharField(max_length=20, null=False, blank=False)
+
     parent = TreeForeignKey('self', on_delete=models.DO_NOTHING,
                             null=True, blank=True, related_name='children')
     description = models.TextField(
@@ -28,7 +30,14 @@ class Category(MPTTModel):
 
 class Product(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
+    identifier = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        default=generate_random_identifier(10),
+    )
     description = models.TextField(null=True, blank=True)
+    marque = models.CharField(max_length=50, null=True, blank=True)
     category = models.ForeignKey(
         Category, null=True, blank=True, on_delete=models.DO_NOTHING)
     price = models.DecimalField(
@@ -59,14 +68,16 @@ FIELD_TYPE = (
 
 class ProductCommandForm(models.Model):
     field_name = models.CharField(
-        max_length=50, null=False, blank=False)
+        _('Name'), max_length=255, null=False, blank=False)
+    field_label = models.CharField(_('Label'),
+                                   max_length=50, null=True, blank=True)
     initial_values = models.CharField(
         max_length=50, null=True, blank=True, help_text='Put here the choices separated by a comma')
     field_type = models.CharField(
         max_length=50, null=True, blank=True, choices=FIELD_TYPE)
 
     def __str__(self):
-        return f'{self.field_name}'
+        return f'{self.field_label}'
 
     class Meta:
         verbose_name = _('Product form field')

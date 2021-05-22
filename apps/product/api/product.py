@@ -15,7 +15,9 @@ from apps.product.api.category import CategoryResource
 class ProductCommandFormResource(ModelResource):
 
     def dehydrate_initial_values(self, bundle):
-        return bundle.data['initial_values'].split(';')
+        if bundle.data['initial_values']:
+            return bundle.data['initial_values'].split(';')
+        return []
 
     class Meta:
         queryset = product_controller.get_product_form_fields()
@@ -43,11 +45,12 @@ class ProductResource(ModelResource):
         queryset = product_controller.get_all_products()
         list_allowed_methods = ['get', 'post']
         detail_allowed_methods = ['get', 'post', 'put', 'delete']
-        resource_name = 'list'
+        resource_name = 'products'
         filtering = {
             'slug': ALL,
             'created': ['exact', 'range', 'gt', 'gte', 'lt', 'lte'],
-            'category': ALL_WITH_RELATIONS
+            'category': ALL_WITH_RELATIONS,
+            'name' : ['exact', 'startswith','contains'],
         }
         authorization = Authorization()
 

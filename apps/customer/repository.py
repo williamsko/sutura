@@ -1,5 +1,13 @@
 from django.contrib.auth.models import User
 from apps.customer.models import Customer, ProofType, Proofs, Favoris
+from pymongo import MongoClient
+from gridfs import GridFS
+from apps.utils.exceptions import ProofStorageException
+import logging
+
+FORMAT = '%(levelname)s %(asctime)-15s %(name)s %(message)s'
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger(__name__)
 
 
 def retreive_customer_by_email(email: str):
@@ -46,6 +54,12 @@ def get_customer(username: str) -> Customer:
     return Customer.objects.get(user__username=username)
 
 
+def store_proof(customer, proof_type, proof_content):
+    db = MongoClient().sutura_files
+    fs = GridFS(db)
+    return fs.put(proof_content)
+
+
 def create_proof(customer, proof_type, proof_content):
 
     proof_type = ProofType.objects.get(short_name=proof_type)
@@ -53,7 +67,8 @@ def create_proof(customer, proof_type, proof_content):
     proof = Proofs()
     proof.customer = customer
     proof.type = proof_type
-    proof.content = proof_content
+    proof.file_object = store_proof(customer, proof_type, proof_content)
+    logger.debug(proof.file_object)
     proof.save()
 
 

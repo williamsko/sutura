@@ -12,3 +12,11 @@ class InternalException(Exception):
 
 class ProductException(Exception):
     pass
+
+
+class CommandException(Exception):
+    pass
+
+
+class ProofStorageException(Exception):
+    pass

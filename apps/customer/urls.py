@@ -2,14 +2,11 @@ from django.urls import path
 from django.conf.urls import include
 from tastypie.api import Api
 
-from apps.customer.api import CustomerResource, ProofTypeResource, FavorisResource
-v1_api = Api(api_name='api')
+from apps.customer.api.auth import AuthResource
+from apps.customer.api.me import ProofTypeResource, FavorisResource
 
-v1_api.register(CustomerResource())
-v1_api.register(ProofTypeResource())
-v1_api.register(FavorisResource())
+resources = []
 
-
-urlpatterns = [
-    path('', include(v1_api.urls)),
-]
+resources.append(AuthResource())
+resources.append(ProofTypeResource())
+resources.append(FavorisResource())

@@ -1,3 +1,4 @@
+import logging
 from apps.customer.validator import CustomerValidator, CustomerLoginValidator, CustomerAddFavorisValidator
 from marshmallow import ValidationError
 from apps.customer import repository as customer_repository
@@ -10,6 +11,10 @@ from apps.product.models import Product
 customer_validator = CustomerValidator()
 customer_login_validator = CustomerLoginValidator()
 customer_add_favoris_validator = CustomerAddFavorisValidator()
+
+FORMAT = '%(levelname)s %(asctime)-15s %(name)s %(message)s'
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger(__name__)
 
 
 def new_customer(payload):
@@ -31,7 +36,7 @@ def new_customer(payload):
         names, phone_number, email, password)
 
     customer = customer_repository.create_customer(created_user)
-    return {'identifier': customer.identifier, }
+    return customer.json
 
 
 def get_all_customers():
@@ -67,14 +72,14 @@ def customer_login(payload):
     password = payload.get('password')
 
     try:
-        can_customer_login = customer_repository.check_customer_password(
+        login_result = customer_repository.check_customer_password(
             phone_number, password)
     except User.DoesNotExist:
         raise CustomerException('Utilisateur introuvable')
     except Exception as e:
         raise CustomerException(str(e))
 
-    if can_customer_login:
+    if login_result:
         customer = customer_repository.get_customer(phone_number)
         return customer.json
     raise CustomerException('Connexion impossible')
@@ -88,7 +93,7 @@ def add_proof_to_customer_account(identifier, proof_type, proof_content):
     except Customer.DoesNotExist:
         raise CustomerException('Client introuvable')
     except Exception as e:
-        print(str(e))
+        logger.error(e)
         raise InternalException('Enregistrement document impossible')
     return {}
 
@@ -114,3 +119,11 @@ def add_product_to_customer_favoris(payload):
     except Exception:
         raise InternalException('Erreur Enregistrement Favoris')
     return {}
+
+
+def get_customer_by_identifier(identifier):
+    try:
+        return customer_repository.retreive_customer_by_identifier(
+            identifier)
+    except Customer.DoesNotExist:
+        raise CustomerException('Client introuvable')

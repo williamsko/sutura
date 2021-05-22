@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 class CustomerAdmin(admin.ModelAdmin):
 
     list_display = ('identifier', 'username', 'first_name',
-                    'last_name', 'address', 'status')
+                    'last_name', 'address', 'status', 'balance', 'mensual_overdraft_amount')
     search_fields = ['user__first_name']
     list_filter = ('status',)
 
@@ -30,7 +30,7 @@ class ProofAdmin(admin.ModelAdmin):
     list_display = ('id', 'type', 'proof_preview', 'status')
 
     def proof_preview(self, obj):
-        return mark_safe(f'<a href="{obj.content.url}">TOTO</a>')
+        return mark_safe(f'<a href="{obj.file_object}">TOTO</a>')
 
 
 admin.site.register(Customer, CustomerAdmin)
