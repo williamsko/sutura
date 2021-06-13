@@ -6,8 +6,12 @@ class DetailValidator(Schema):
     field_value = fields.Str(required=True)
 
 
-class CommandValidator(Schema):
-    customer_identifier = fields.Str(required=True)
-    command_identifier = fields.Str(required=False)
-    product_identifier = fields.Str(required=True)
+class ItemsValidator(Schema):
+    product = fields.Str(required=True)
     details = fields.List(fields.Nested(DetailValidator, required=True))
+
+
+class CommandValidator(Schema):
+    customer = fields.Str(required=True)
+    command = fields.Str(required=False)
+    items = fields.List(fields.Nested(ItemsValidator, required=True))

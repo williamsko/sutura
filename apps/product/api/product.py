@@ -59,14 +59,13 @@ class ProductResource(ModelResource):
 
 
 class BannerResource(ModelResource):
-    type_form = ForeignKey(TypeFormResource, 'type_form', full=True)
-    category = ForeignKey(CategoryResource, 'category', full=True)
+    product = ForeignKey(ProductResource, 'product', full=True)
 
     class Meta:
-        queryset = product_controller.get_all_products()
+        queryset = product_controller.get_banner()
         list_allowed_methods = ['get', 'post']
         detail_allowed_methods = ['get', 'post', 'put', 'delete']
-        resource_name = 'products'
+        resource_name = 'banner'
         filtering = {
             'slug': ALL,
             'created': ['exact', 'range', 'gt', 'gte', 'lt', 'lte'],

@@ -20,8 +20,17 @@ def create_or_get_command(customer, command_identifier=None):
 
 
 def add_item_to_command(command, product, details):
-    item = Item()
+    try:
+        item = Item.objects.get(command=command, product=product)
+    except Item.DoesNotExist:
+        item = Item()
     item.command = command
     item.product = product
+    item.price = product.price
     item.details = details
     item.save()
+
+
+def update_command_details(command, details):
+    command.details = details
+    command.save()

@@ -38,7 +38,10 @@ class CommandResource(ModelResource):
         try:
             command = transaction_controller.create_or_get_command(
                 payload)
-            transaction_controller.add_item_to_command(payload, command)
+            payload = transaction_controller.add_items_to_command(
+                payload, command)
+
+            transaction_controller.save_command_with_detail(command, payload)
         except CommandException as e:
             return self.create_response(request, {'error': str(e)}, HttpConflict)
         except Exception as e:
@@ -46,7 +49,7 @@ class CommandResource(ModelResource):
 
         except ValidationError as e:
             return self.create_response(request, {'error': str(e)}, HttpApplicationError)
-        return self.create_response(request, command.identifier, HttpCreated)
+        return self.create_response(request, payload, HttpCreated)
 
-    def add_item_to_command(self, request,**kwargs):
+    def add_item_to_command(self, request, **kwargs):
         self.method_check(request, allowed=['post'])

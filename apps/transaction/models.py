@@ -20,6 +20,7 @@ class Command(models.Model):
                               blank=True, choices=STATUS)
     customer = models.ForeignKey(Customer,
                                  blank=False, null=False, on_delete=(models.DO_NOTHING))
+    details = jsonfield.JSONField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -41,8 +42,11 @@ class Command(models.Model):
 
 
 class Item(models.Model):
+    command = models.ForeignKey(Command,
+                                blank=True, null=True, on_delete=(models.DO_NOTHING))
     product = models.ForeignKey(Product,
                                 blank=False, null=False, on_delete=(models.DO_NOTHING))
+    price = models.IntegerField(default=0, help_text=_('Product price'))
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     details = jsonfield.JSONField()
@@ -50,7 +54,7 @@ class Item(models.Model):
     @property
     def total_amount(self):
         if self.product.type_form.name == 'DEFAULT':
-            return int(self.details[0]['field_value']) * self.product.price
+            return int(self.details[0]['field_value']) * self.price
         if self.product.type_form.name == 'AIRTIME':
             output_dict = [
                 x for x in self.details if x['field_name'] == 'montant']

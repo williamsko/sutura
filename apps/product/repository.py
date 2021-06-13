@@ -1,4 +1,4 @@
-from apps.product.models import Category, Product, ProductCommandForm, TypeForm
+from apps.product.models import Category, Product, ProductCommandForm, TypeForm, Banner
 
 
 def get_categories(status=True):
@@ -23,3 +23,7 @@ def get_product_by_id(id):
 
 def get_product_by_identifier(identifier):
     return Product.objects.get(identifier=identifier)
+
+
+def get_banner(status=True):
+    return Banner.objects.filter(status=status)

@@ -20,25 +20,32 @@ def create_or_get_command(payload):
         _validate_command_payload(payload)
     except ValidationError as e:
         raise PayloadException(str(e))
-    customer_identifier = payload.get('customer_identifier')
+    customer_identifier = payload.get('customer')
     customer = customer_controller.get_customer_by_identifier(
         customer_identifier)
-    return repository.create_or_get_command(customer, payload.get('command_identifier', None))
+    return repository.create_or_get_command(customer, payload.get('command', None))
 
 
-def add_item_to_command(payload, command):
-    product_identifier = payload.get('product_identifier')
-    try:
-        product = product_controller.get_product_by_identifier(
-            product_identifier)
-    except Product.DoesNotExist:
-        raise ProductException('Produit introuvable')
+def add_items_to_command(payload, command):
+    items = payload.get('items')
+    for item in items:
+        try:
+            product = product_controller.get_product_by_identifier(
+                item.get('product'))
+            details = item.get('details')
+            repository.add_item_to_command(command, product, details)
+        except Product.DoesNotExist:
+            raise ProductException('Produit introuvable')
 
-    details = payload.get('details')
-
-    repository.add_item_to_command(command, product, details)
+    payload.update({'command': command.identifier,
+                    'total_amount': command.total_amount})
+    return payload
 
 
 def _validate_command_payload(payload):
     validator = CommandValidator()
     validator.load(payload)
+
+
+def save_command_with_detail(command, payload):
+    repository.update_command_details(command, payload)

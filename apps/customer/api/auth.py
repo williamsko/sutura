@@ -3,7 +3,8 @@ from django.conf.urls import url
 from tastypie.utils import trailing_slash
 from apps.customer import controller as customer_controller
 from apps.utils.exceptions import CustomerException, ProductException
-from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound, HttpCreated, HttpApplicationError, HttpConflict
+from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound, \
+    HttpCreated, HttpApplicationError, HttpConflict, HttpNoContent
 from tastypie.authorization import Authorization
 from tastypie.fields import ForeignKey
 from apps.product.api import ProductResource
@@ -37,12 +38,18 @@ class AuthResource(ModelResource):
 
             url(rf'^%s/login$' %
                 self._meta.resource_name, self.wrap_view('login')),
+
+            url(rf'^%s/request_otp$' %
+                self._meta.resource_name, self.wrap_view('request_otp')),
         ]
 
     def register(self, request, **kwargs):
         self.method_check(request, allowed=['post'])
         payload = self.deserialize(request, request.body)
         try:
+            is_otp_valid = customer_controller.check_otp(payload)
+            if not is_otp_valid:
+                return self.create_response(request, {'error': 'OTP invalide'}, HttpUnauthorized)
             response = customer_controller.new_customer(payload)
         except CustomerException as e:
             return self.create_response(request, {'error': str(e)}, HttpConflict)
@@ -63,3 +70,12 @@ class AuthResource(ModelResource):
         except Exception as e:
             return self.create_response(request, {'error': str(e)}, HttpApplicationError)
         return self.create_response(request, response)
+
+    def request_otp(self, request, **kwargs):
+        self.method_check(request, allowed=['post'])
+        payload = self.deserialize(request, request.body)
+        try:
+            customer_controller.send_otp(payload)
+        except Exception as e:
+            return self.create_response(request, {'error': str(e)}, HttpApplicationError)
+        return self.create_response(request, {}, HttpNoContent)

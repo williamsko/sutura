@@ -44,8 +44,7 @@ class Product(models.Model):
     marque = models.CharField(max_length=50, null=True, blank=True)
     category = models.ForeignKey(
         Category, null=True, blank=True, on_delete=models.DO_NOTHING)
-    price = models.DecimalField(
-        max_digits=9, decimal_places=2, default=0, help_text=_('Product price'))
+    price = models.IntegerField(default=0, help_text=_('Product price'))
     image = models.ImageField(
         upload_to=product_image_directory_path, blank=True, null=True)
     type_form = models.ForeignKey(
@@ -119,4 +118,4 @@ class Banner(models.Model):
         app_label = 'product'
 
     def __str__(self):
-        return self.name
+        return self.title

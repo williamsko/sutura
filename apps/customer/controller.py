@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from apps.utils.exceptions import CustomerException, PayloadException, InternalException, ProductException
 from apps.customer.models import Customer
 from apps.product.models import Product
+from apps.utils.tools import get_totp, send_sms, is_valid_otp
 
 customer_validator = CustomerValidator()
 customer_login_validator = CustomerLoginValidator()
@@ -18,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 def new_customer(payload):
-    _validate_customer_creation_payload(payload)
 
     full_name = payload.get('full_name')
     phone_number = payload.get('phone_number')
@@ -127,3 +127,18 @@ def get_customer_by_identifier(identifier):
             identifier)
     except Customer.DoesNotExist:
         raise CustomerException('Client introuvable')
+
+
+def send_otp(payload: dict):
+    try:
+        totp = get_totp()
+        logger.error(f'Generated TOTP : {totp}')
+        send_sms(payload.get('phone_number'), totp)
+    except Exception:
+        raise InternalException
+
+
+def check_otp(payload: dict):
+    _validate_customer_creation_payload(payload)
+    otp = payload.get('otp')
+    return is_valid_otp(otp)
