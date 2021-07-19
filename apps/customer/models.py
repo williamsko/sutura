@@ -39,6 +39,19 @@ class Customer(models.Model):
         return _
 
     @property
+    def delivery_address(self):
+        addresses = self.deliveryaddress_set.all()
+        _ = []
+        for address in addresses:
+            _.append(address.json)
+        return _
+
+    @property
+    def bank_informations(self):
+        bank_information = self.bankinformation_set.all()[0]
+        return bank_information.json
+
+    @property
     def json(self):
 
         return {
@@ -49,6 +62,8 @@ class Customer(models.Model):
             'mensual_limit': self.mensual_overdraft_amount,
             'balance': self.balance,
             'proofs': self.proofs,
+            'delivery_addresses': self.delivery_address,
+            'bank_information': self.bank_informations,
         }
 
     @property
@@ -114,7 +129,6 @@ class Proofs(models.Model):
             'status': self.status,
         }
 
-
     class Meta:
         verbose_name = _('Proof')
         verbose_name_plural = _('Proofs')
@@ -150,3 +164,67 @@ class Favoris(models.Model):
 
     def __str__(self):
         return f'{self.product.name} {self.customer.user.username}'
+
+
+class DeliveryAddress(models.Model):
+    customer = models.ForeignKey(
+        'Customer', on_delete=models.DO_NOTHING, null=False, blank=False)
+    address = models.CharField(max_length=200, null=True, blank=True)
+    city = models.CharField(max_length=50, null=True, blank=True)
+    phone_number = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('Delivery address')
+        verbose_name_plural = _('Delivery addresses')
+        app_label = 'customer'
+
+    def __str__(self):
+        return f'{self.address} {self.city}'
+
+    @property
+    def json(self):
+        return {
+            'address': self.address,
+            'city': self.city,
+            'phone_number': self.phone_number,
+        }
+
+
+class BankInstitution(models.Model):
+    name = models.CharField(max_length=200, null=False, blank=False)
+
+    class Meta:
+        verbose_name = _('Bank')
+        verbose_name_plural = _('Banks')
+        app_label = 'customer'
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+class BankInformation(models.Model):
+    customer = models.ForeignKey(
+        'Customer', on_delete=models.DO_NOTHING, null=False, blank=False)
+    bank = models.ForeignKey(
+        'BankInstitution', on_delete=models.DO_NOTHING, null=False, blank=False)
+    iban = models.CharField(max_length=100, null=False, blank=False)
+    status = models.BooleanField(default=False)
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('Bank account information')
+        verbose_name_plural = _('Bank account informations')
+        app_label = 'customer'
+
+    @property
+    def json(self):
+        return {
+            'bank': self.bank.name,
+            'iban': self.iban,
+            'status': self.status,
+        }
+
+    def __str__(self):
+        return f'{self.iban}'

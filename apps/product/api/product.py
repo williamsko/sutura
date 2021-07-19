@@ -43,14 +43,14 @@ class ProductResource(ModelResource):
 
     class Meta:
         queryset = product_controller.get_all_products()
-        list_allowed_methods = ['get', 'post']
-        detail_allowed_methods = ['get', 'post', 'put', 'delete']
+        list_allowed_methods = ['get']
+        detail_allowed_methods = ['get']
         resource_name = 'products'
         filtering = {
             'slug': ALL,
             'created': ['exact', 'range', 'gt', 'gte', 'lt', 'lte'],
             'category': ALL_WITH_RELATIONS,
-            'name' : ['exact', 'startswith','contains'],
+            'name' : ['startswith','contains'],
         }
         authorization = Authorization()
 

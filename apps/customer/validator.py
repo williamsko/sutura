@@ -17,3 +17,15 @@ class CustomerLoginValidator(Schema):
 class CustomerAddFavorisValidator(Schema):
     customer_identifier = fields.Str(required=True)
     product_id = fields.Str(required=True)
+
+
+class CustomerAddDeliveryAddressValidator(Schema):
+    customer_identifier = fields.Str(required=True)
+    address = fields.Str(required=True)
+    city = fields.Str(required=True)
+    phone_number = fields.Str(required=True)
+
+
+class CustomerUpdatePinValidator(Schema):
+    customer_identifier = fields.Str(required=True)
+    password = fields.Str(required=True)

@@ -53,6 +53,8 @@ class CustomerResource(MultiPartResource, ModelResource):
 
             url(rf'^%s/proof/upload%s$' % (self._meta.resource_name,
                                            trailing_slash()), self.wrap_view('upload_proof')),
+            url(rf'^%s/delivery_address%s$' % (self._meta.resource_name,
+                                              trailing_slash()), self.wrap_view('add_delivery_address')),
 
             url(r'^%s/favoris/add%s$' % (self._meta.resource_name,
                                          trailing_slash()),
@@ -93,17 +95,32 @@ class CustomerResource(MultiPartResource, ModelResource):
             return self.create_response(request, {'error': str(e)}, HttpApplicationError)
         return self.create_response(request, response, HttpCreated)
 
+    def add_delivery_address(self, request, **kwargs):
+        self.method_check(request, allowed=['post'])
+        payload = self.deserialize(request, request.body)
+
+        try:
+            response = customer_controller.add_customer_delivery_address(
+                payload)
+
+        except CustomerException as e:
+            return self.create_response(request, {'error': str(e)}, HttpForbidden)
+        except Exception as e:
+            return self.create_response(request, {'error': str(e)}, HttpApplicationError)
+
+        return self.create_response(request, response, HttpCreated)
+
 
 class FavorisResource(ModelResource):
-    customer = ForeignKey(AuthResource, 'customer', null=True, full=True)
-    product = ForeignKey(ProductResource, 'product', null=True, full=True)
+    customer=ForeignKey(AuthResource, 'customer', null = True, full = True)
+    product=ForeignKey(ProductResource, 'product', null = True, full = True)
 
     class Meta:
-        queryset = customer_controller.get_all_favoris()
-        list_allowed_methods = ['get']
-        detail_allowed_methods = ['get']
-        resource_name = 'favoris'
-        filtering = {
+        queryset=customer_controller.get_all_favoris()
+        list_allowed_methods=['get']
+        detail_allowed_methods=['get']
+        resource_name='favoris'
+        filtering={
             'slug': ALL,
             'customer': ALL_WITH_RELATIONS,
             'created': ['exact', 'range', 'gt', 'gte', 'lt', 'lte'],

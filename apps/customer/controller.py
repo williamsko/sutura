@@ -1,5 +1,6 @@
 import logging
-from apps.customer.validator import CustomerValidator, CustomerLoginValidator, CustomerAddFavorisValidator
+from apps.customer.validator import CustomerValidator, CustomerLoginValidator, CustomerAddFavorisValidator, \
+    CustomerAddDeliveryAddressValidator, CustomerUpdatePinValidator
 from marshmallow import ValidationError
 from apps.customer import repository as customer_repository
 from apps.product.repository import get_product_by_id
@@ -12,6 +13,8 @@ from apps.utils.tools import get_totp, send_sms, is_valid_otp
 customer_validator = CustomerValidator()
 customer_login_validator = CustomerLoginValidator()
 customer_add_favoris_validator = CustomerAddFavorisValidator()
+customer_add_delivery_address_validator = CustomerAddDeliveryAddressValidator()
+customer_update_pin_validator = CustomerUpdatePinValidator()
 
 FORMAT = '%(levelname)s %(asctime)-15s %(name)s %(message)s'
 logging.basicConfig(format=FORMAT)
@@ -142,3 +145,50 @@ def check_otp(payload: dict):
     _validate_customer_creation_payload(payload)
     otp = payload.get('otp')
     return is_valid_otp(otp)
+
+
+def _validate_customer_add_delivery_address_payload(payload):
+    try:
+        customer_add_delivery_address_validator.load(payload)
+    except ValidationError as e:
+        raise PayloadException(str(e))
+
+
+def add_customer_delivery_address(payload: dict):
+    _validate_customer_add_delivery_address_payload(payload)
+    identifier = payload.get('customer_identifier')
+    address = payload.get('address')
+    city = payload.get('city')
+    phone_number = payload.get('phone_number')
+
+    try:
+        customer = customer_repository.retreive_customer_by_identifier(
+            identifier)
+        customer_repository.add_delivery_address(
+            customer, address, city, phone_number)
+    except Customer.DoesNotExist:
+        raise CustomerException('Client introuvable')
+
+    except Exception:
+        raise InternalException('Erreur Enregistrement adresse de livraison')
+    return {}
+
+
+def update_pin(payload: dict):
+    try:
+        customer_update_pin_validator.load(payload)
+    except ValidationError as e:
+        raise PayloadException(str(e))
+
+    identifier = payload.get('customer_identifier')
+    password = payload.get('customer_identifier')
+    try:
+        customer = customer_repository.retreive_customer_by_identifier(
+            identifier)
+        customer_repository.set_customer_password(customer, password)
+    except Customer.DoesNotExist:
+        raise CustomerException('Client introuvable')
+
+    except Exception:
+        raise InternalException('Erreur Enregistrement adresse de livraison')
+    return {}

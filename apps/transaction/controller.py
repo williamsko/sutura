@@ -2,9 +2,10 @@ from apps.transaction import repository
 from apps.customer import controller as customer_controller
 from apps.product import controller as product_controller
 from apps.product.models import Product
-from apps.utils.exceptions import ProductException, PayloadException
+from apps.utils.exceptions import ProductException, PayloadException, CommandNotFoundException
 from apps.transaction.validator import CommandValidator
 from marshmallow import ValidationError
+from apps.transaction.models import Command
 
 
 def get_all_items():
@@ -49,3 +50,22 @@ def _validate_command_payload(payload):
 
 def save_command_with_detail(command, payload):
     repository.update_command_details(command, payload)
+
+
+def get_command_by_identifier(payload):
+    command_identifier = payload.get('command_identifier')
+    try:
+        return repository.get_command(command_identifier)
+    except Command.DoesNotExist:
+        raise CommandNotFoundException()
+
+
+def update_command_status(command, dest_status):
+    command.status = dest_status
+    command.save()
+
+
+def update_command_payload(command, payload):
+    payload.update({'status': command.status,
+                    'delivery_date': command.created})
+    return payload

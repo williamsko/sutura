@@ -34,3 +34,7 @@ def add_item_to_command(command, product, details):
 def update_command_details(command, details):
     command.details = details
     command.save()
+
+
+def get_command(command_identifier):
+    return Command.objects.get(identifier=command_identifier)

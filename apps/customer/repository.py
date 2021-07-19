@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
-from apps.customer.models import Customer, ProofType, Proofs, Favoris
+from apps.customer.models import Customer, ProofType, Proofs, Favoris, \
+    DeliveryAddress
 from pymongo import MongoClient
 from gridfs import GridFS
 from apps.utils.exceptions import ProofStorageException
@@ -92,5 +93,22 @@ def add_product_to_customer_favoris(customer, product):
         favoris.save()
 
 
+def add_delivery_address(customer, address, city, phone_number):
+    delivery_address = DeliveryAddress()
+    delivery_address.address = address
+    delivery_address.city = city
+    delivery_address.phone_number = phone_number
+    delivery_address.customer = customer
+    delivery_address.save()
+
+def set_customer_password(customer, password):
+    user = customer.user
+    user.set_password(password)
+    user.save()
+    customer.user = user
+    customer.save()
+
+
 def _check_if_product_is_favoris_of_customer(customer, product):
-    return Favoris.objects.filter(customer=customer, product=product).count() > 0
+    return Favoris.objects.filter(
+        customer=customer, product=product).count() > 0

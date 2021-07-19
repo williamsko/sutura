@@ -17,9 +17,10 @@ class CommandResource(ModelResource):
         queryset = transaction_controller.get_all_commands()
         list_allowed_methods = ['get', 'post']
         detail_allowed_methods = ['get', 'post', 'put', 'delete']
-        resource_name = ''
+        resource_name = 'command'
         filtering = {
             'identifier': ALL,
+            'customer': ALL_WITH_RELATIONS,
             'created': ['exact', 'range', 'gt', 'gte', 'lt', 'lte'],
         }
 
@@ -28,8 +29,10 @@ class CommandResource(ModelResource):
 
     def prepend_urls(self):
         return [
-            url(r'^command/create%s$' % trailing_slash(), self.wrap_view(
+            url(r'^%s/create%s$' % (self._meta.resource_name, trailing_slash()), self.wrap_view(
                 'create_new_command'), name='api_create_new_command'),
+            url(r'^%s/confirm_receipt%s$' % (self._meta.resource_name, trailing_slash()), self.wrap_view(
+                'confirm_receipt'), name='api_confirm_receipt'),
         ]
 
     def create_new_command(self, request, **kwargs):
@@ -53,3 +56,22 @@ class CommandResource(ModelResource):
 
     def add_item_to_command(self, request, **kwargs):
         self.method_check(request, allowed=['post'])
+
+    def confirm_receipt(self, request, **kwargs):
+        self.method_check(request, allowed=['post'])
+        payload = self.deserialize(request, request.body)
+
+        try:
+            command = transaction_controller.get_command_by_identifier(
+                payload)
+            transaction_controller.update_command_status(command, 'LIVREE')
+            payload = transaction_controller.update_command_payload(
+                command, payload)
+        except CommandException as e:
+            return self.create_response(request, {'error': str(e)}, HttpConflict)
+        except Exception as e:
+            return self.create_response(request, {'error': str(e)}, HttpApplicationError)
+
+        except ValidationError as e:
+            return self.create_response(request, {'error': str(e)}, HttpApplicationError)
+        return self.create_response(request, payload, HttpCreated)

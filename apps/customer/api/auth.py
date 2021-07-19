@@ -41,6 +41,12 @@ class AuthResource(ModelResource):
 
             url(rf'^%s/request_otp$' %
                 self._meta.resource_name, self.wrap_view('request_otp')),
+
+            url(rf'^%s/update_pin$' %
+                self._meta.resource_name, self.wrap_view('update_pin')),
+
+            url(rf'^%s/reset_pin$' %
+                self._meta.resource_name, self.wrap_view('update_pin')),
         ]
 
     def register(self, request, **kwargs):
@@ -76,6 +82,28 @@ class AuthResource(ModelResource):
         payload = self.deserialize(request, request.body)
         try:
             customer_controller.send_otp(payload)
+        except Exception as e:
+            return self.create_response(request, {'error': str(e)}, HttpApplicationError)
+        return self.create_response(request, {}, HttpNoContent)
+
+    def update_pin(self, request, **kwargs):
+        self.method_check(request, allowed=['post'])
+        payload = self.deserialize(request, request.body)
+        try:
+            customer_controller.update_pin(payload)
+        except Exception as e:
+            return self.create_response(request, {'error': str(e)}, HttpApplicationError)
+        return self.create_response(request, {}, HttpNoContent)
+
+    def reset_pin(self, request, **kwargs):
+        self.method_check(request, allowed=['post'])
+        payload = self.deserialize(request, request.body)
+        try:
+            is_otp_valid = customer_controller.check_otp(payload)
+            if not is_otp_valid:
+                return self.create_response(request, {'error': 'OTP invalide'}, HttpUnauthorized)
+
+            customer_controller.update_pin(payload)
         except Exception as e:
             return self.create_response(request, {'error': str(e)}, HttpApplicationError)
         return self.create_response(request, {}, HttpNoContent)

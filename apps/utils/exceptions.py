@@ -20,3 +20,7 @@ class CommandException(Exception):
 
 class ProofStorageException(Exception):
     pass
+
+
+class CommandNotFoundException(Exception):
+    pass
