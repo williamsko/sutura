@@ -127,3 +127,7 @@ STATIC_URL = '/static/'
 
 
 TASTYPIE_ALLOW_MISSING_SLASH = True
+
+
+
+    

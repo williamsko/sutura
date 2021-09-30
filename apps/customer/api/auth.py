@@ -83,7 +83,8 @@ class AuthResource(ModelResource):
         try:
             customer_controller.send_otp(payload)
         except Exception as e:
-            return self.create_response(request, {'error': str(e)}, HttpApplicationError)
+            return self.create_response(request, {}, HttpNoContent)
+            #return self.create_response(request, {'error': str(e)}, HttpApplicationError)
         return self.create_response(request, {}, HttpNoContent)
 
     def update_pin(self, request, **kwargs):
