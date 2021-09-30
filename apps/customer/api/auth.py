@@ -53,9 +53,9 @@ class AuthResource(ModelResource):
         self.method_check(request, allowed=['post'])
         payload = self.deserialize(request, request.body)
         try:
-            is_otp_valid = customer_controller.check_otp(payload)
-            if not is_otp_valid:
-                return self.create_response(request, {'error': 'OTP invalide'}, HttpUnauthorized)
+            #is_otp_valid = customer_controller.check_otp(payload)
+            #if not is_otp_valid:
+            #    return self.create_response(request, {'error': 'OTP invalide'}, HttpUnauthorized)
             response = customer_controller.new_customer(payload)
         except CustomerException as e:
             return self.create_response(request, {'error': str(e)}, HttpConflict)
