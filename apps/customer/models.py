@@ -16,7 +16,7 @@ class Customer(models.Model):
         default=generate_random_identifier(10),
     )
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
     address = models.CharField(max_length=100, null=True, blank=True)
     status = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
